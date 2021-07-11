@@ -20,30 +20,56 @@
     var CONFIG = {"hostname":"huycui.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="告别是为了新的出发，前往更好的下一站">
-<meta property="og:type" content="website">
-<meta property="og:title" content="HuyCui&#39;s Blog">
-<meta property="og:url" content="https://huycui.github.io/index.html">
+  <meta name="description" content="前言​        错误率与精度经常用来衡量一个模型的好坏，但这两项指标并不能满足所有的需求。以西瓜书中的例子来说，农夫拉来一车西瓜，错误率可以衡量出有多少比例的瓜被判别错误，而我们关心的是好瓜，或说好瓜中有多少比例被判别为了好瓜，此时仅仅是错误率这一个指标就不够用了。 混淆矩阵​        对于二分类问题，可以根据样本的真实类别与学习器预测样本的类别组合，划分为真正例（true posit">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【机器学习笔记】 模型评估：查准率、查全率和F1">
+<meta property="og:url" content="https://huycui.github.io/2021/[Machine%20Learning]%20%E6%A8%A1%E5%9E%8B%E8%AF%84%E4%BC%B0%EF%BC%9A%E6%9F%A5%E5%87%86%E7%8E%87%E3%80%81%E6%9F%A5%E5%85%A8%E7%8E%87%E5%92%8CF1/index.html">
 <meta property="og:site_name" content="HuyCui&#39;s Blog">
-<meta property="og:description" content="告别是为了新的出发，前往更好的下一站">
+<meta property="og:description" content="前言​        错误率与精度经常用来衡量一个模型的好坏，但这两项指标并不能满足所有的需求。以西瓜书中的例子来说，农夫拉来一车西瓜，错误率可以衡量出有多少比例的瓜被判别错误，而我们关心的是好瓜，或说好瓜中有多少比例被判别为了好瓜，此时仅仅是错误率这一个指标就不够用了。 混淆矩阵​        对于二分类问题，可以根据样本的真实类别与学习器预测样本的类别组合，划分为真正例（true posit">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20210711142935341.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0hvcml6b25odWk=,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://latex.codecogs.com/gif.latex?P%3D%5Cfrac%7BTP%7D%7BTP&plus;FP%7D">
+<meta property="og:image" content="https://latex.codecogs.com/gif.latex?R%3D%5Cfrac%7BTP%7D%7BTP&plus;FN%7D">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20210709102436328.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0hvcml6b25odWk=,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://latex.codecogs.com/gif.latex?%5Cfrac%7B1%7D%7BF1%7D=%5Cfrac%7B1%7D%7B2%7D%5Ccdot%20(%5Cfrac%7B1%7D%7BP%7D&plus;%5Cfrac%7B1%7D%7BR%7D)">
+<meta property="og:image" content="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==">
+<meta property="og:image" content="https://latex.codecogs.com/gif.latex?F1=%5Cfrac%7B2%5Ctimes%20P%5Ctimes%20R%7D%7BP&plus;R%7D">
+<meta property="og:image" content="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==">
+<meta property="og:image" content="https://latex.codecogs.com/gif.latex?F_%7B%5Cbeta%20%7D">
+<meta property="og:image" content="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==">
+<meta property="og:image" content="https://latex.codecogs.com/gif.latex?F_%7B%5Cbeta%20%7D">
+<meta property="og:image" content="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==">
+<meta property="og:image" content="https://latex.codecogs.com/gif.latex?F_%7B%5Cbeta%7D=%5Cfrac%7B(1&plus;%5Cbeta%5E%7B2%7D)%5Ctimes%20P%20%5Ctimes%20R%7D%7B(%5Cbeta%5E%7B2%7D%5Ctimes%20P)&plus;R%7D">
+<meta property="og:image" content="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==">
+<meta property="og:image" content="https://latex.codecogs.com/gif.latex?%5Cbeta">
+<meta property="og:image" content="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==">
+<meta property="og:image" content="https://latex.codecogs.com/gif.latex?%5Cbeta">
+<meta property="og:image" content="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==">
+<meta property="og:image" content="https://latex.codecogs.com/gif.latex?%5Cbeta">
+<meta property="og:image" content="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==">
+<meta property="og:image" content="https://latex.codecogs.com/gif.latex?%5Cbar%7BTP%7D%20%5Cbar%7BFP%7D%20%5Cbar%7BTN%7D%20%5Cbar%7BFN%7D">
+<meta property="og:image" content="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==">
+<meta property="article:published_time" content="2021-07-11T03:17:41.000Z">
+<meta property="article:modified_time" content="2021-07-11T06:54:26.845Z">
 <meta property="article:author" content="HuyCui">
+<meta property="article:tag" content="模型评估">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/20210711142935341.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0hvcml6b25odWk=,size_16,color_FFFFFF,t_70">
 
-<link rel="canonical" href="https://huycui.github.io/">
+<link rel="canonical" href="https://huycui.github.io/2021/[Machine%20Learning]%20%E6%A8%A1%E5%9E%8B%E8%AF%84%E4%BC%B0%EF%BC%9A%E6%9F%A5%E5%87%86%E7%8E%87%E3%80%81%E6%9F%A5%E5%85%A8%E7%8E%87%E5%92%8CF1/">
 
 
 <script id="page-configurations">
   // https://hexo.io/docs/variables.html
   CONFIG.page = {
     sidebar: "",
-    isHome : true,
-    isPost : false,
+    isHome : false,
+    isPost : true,
     lang   : 'zh-CN'
   };
 </script>
 
-  <title>HuyCui's Blog</title>
+  <title>【机器学习笔记】 模型评估：查准率、查全率和F1 | HuyCui's Blog</title>
   
 
 
@@ -156,9 +182,10 @@
         <div class="content-wrap">
           
 
-          <div class="content index posts-expand">
+          <div class="content post posts-expand">
             
-      
+
+    
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
@@ -174,10 +201,9 @@
       <meta itemprop="name" content="HuyCui's Blog">
     </span>
       <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/%5BMachine%20Learning%5D%20%E6%A8%A1%E5%9E%8B%E8%AF%84%E4%BC%B0%EF%BC%9A%E6%9F%A5%E5%87%86%E7%8E%87%E3%80%81%E6%9F%A5%E5%85%A8%E7%8E%87%E5%92%8CF1/" class="post-title-link" itemprop="url">【机器学习笔记】 模型评估：查准率、查全率和F1</a>
-        </h2>
+        <h1 class="post-title" itemprop="name headline">
+          【机器学习笔记】 模型评估：查准率、查全率和F1
+        </h1>
 
         <div class="post-meta">
             <span class="post-meta-item">
@@ -204,6 +230,13 @@
             </span>
 
           
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
 
         </div>
       </header>
@@ -214,7 +247,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>​        错误率与精度经常用来衡量一个模型的好坏，但这两项指标并不能满足所有的需求。以西瓜书中的例子来说，农夫拉来一车西瓜，错误率可以衡量出有多少比例的瓜被判别错误，而我们关心的是好瓜，或说好瓜中有多少比例被判别为了好瓜，此时仅仅是错误率这一个指标就不够用了。</p>
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>​        错误率与精度经常用来衡量一个模型的好坏，但这两项指标并不能满足所有的需求。以西瓜书中的例子来说，农夫拉来一车西瓜，错误率可以衡量出有多少比例的瓜被判别错误，而我们关心的是好瓜，或说好瓜中有多少比例被判别为了好瓜，此时仅仅是错误率这一个指标就不够用了。</p>
 <h3 id="混淆矩阵"><a href="#混淆矩阵" class="headerlink" title="混淆矩阵"></a>混淆矩阵</h3><p>​        对于二分类问题，可以根据样本的真实类别与学习器预测样本的类别组合，划分为真正例（true positive）、假正例（false positive）、真反例（true negative）、假反例（false negative），分别用TP、FP、TN、FN表示，这四种样例之和就等于样例总数，从而可以通过分类结果做出混淆矩阵。</p>
 <p><img src="https://img-blog.csdnimg.cn/20210711142935341.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0hvcml6b25odWk=,size_16,color_FFFFFF,t_70" alt="混淆矩阵"></p>
 <h3 id="查准率与查全率"><a href="#查准率与查全率" class="headerlink" title="查准率与查全率"></a>查准率与查全率</h3><p>查准率表示在预测为正的所有的样本当中，真实的正例所占的比例，记作P，又称为正确率。</p>
@@ -233,102 +266,33 @@
 <p>​          第一种方法是在n个混淆矩阵上分别计算出n个P和R，再计算平均值，这样就可以得到宏查准率（macro-P）、宏查全率（macro-R）以及宏F1（macro-F1）。</p>
 <p>​          第二种方法是先将混淆矩阵的对应元素进行平均，得到<img src="https://latex.codecogs.com/gif.latex?%5Cbar%7BTP%7D%20%5Cbar%7BFP%7D%20%5Cbar%7BTN%7D%20%5Cbar%7BFN%7D" alt="\bar{TP} \bar{FP} \bar{TN} \bar{FN}"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动">，再基于这些平均值计算出微查准率（micro-P）、微查全率（micro-R）以及微F1（micro-F1)。</p>
 
-      
     </div>
 
     
     
     
+
       <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
+          <div class="post-tags">
+              <a href="/tags/%E6%A8%A1%E5%9E%8B%E8%AF%84%E4%BC%B0/" rel="tag"># 模型评估</a>
+          </div>
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://huycui.github.io/2019/tf-openpose-estimation%E5%BE%97%E5%88%B0%E5%85%B3%E8%8A%82%E7%82%B9%E7%9A%84%E5%9D%90%E6%A0%87/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="HuyCui">
-      <meta itemprop="description" content="告别是为了新的出发，前往更好的下一站">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="HuyCui's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/tf-openpose-estimation%E5%BE%97%E5%88%B0%E5%85%B3%E8%8A%82%E7%82%B9%E7%9A%84%E5%9D%90%E6%A0%87/" class="post-title-link" itemprop="url">tf-openpose-estimation得到关节点的坐标</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-04-12 16:11:50" itemprop="dateCreated datePublished" datetime="2019-04-12T16:11:50+08:00">2019-04-12</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-07-11 10:18:20" itemprop="dateModified" datetime="2021-07-11T10:18:20+08:00">2021-07-11</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E5%9B%BE%E5%83%8F%E8%AF%86%E5%88%AB/" itemprop="url" rel="index"><span itemprop="name">图像识别</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p> 版权声明：本文为博主原创文章，未经博主允许不得转载。 <a target="_blank" rel="noopener" href="https://blog.csdn.net/Horizonhui/article/details/89243449"> https://blog.csdn.net/Horizonhui/article/details/89243449</a><br>   <a target="_blank" rel="noopener" href="https://github.com/ildoonet/tf-pose-estimation/issues?page=1&amp;q=is:issue+is:open">从这可以找到答案</a></p>
-<p> 从github的Issue中得到了一种解决办法，需要修改一下tf-pose中的estimator.py文件，其中TfPoseEstimator类中有一个函数为draw_humans，将在其中添加一个list来保存点的坐标即可。需要添加以下三行代码，其中，flat就是存放坐标的list</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"> flat = [0.0 for i in range(36)]</span><br><span class="line">....</span><br><span class="line"></span><br><span class="line">flat[i*2] = center[0]</span><br><span class="line">flat[i*2+1] = center[1]</span><br></pre></td></tr></table></figure>
-<p> 修改完毕后为该函数增加一个返回值或是在函数中直接输出，更改后的代码如下</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">def draw_humans(npimg, humans, imgcopy=False):</span><br><span class="line">       if imgcopy:</span><br><span class="line">           npimg = np.copy(npimg)</span><br><span class="line">       image_h, image_w = npimg.shape[:2]</span><br><span class="line">       centers = &#123;&#125;</span><br><span class="line">       #添加一个数组记录坐标  作为返回值返回</span><br><span class="line">       flat = [0.0 for i in range(36)]</span><br><span class="line">       for human in humans:</span><br><span class="line">           # draw point</span><br><span class="line">           for i in range(common.CocoPart.Background.value):</span><br><span class="line">               if i not in human.body_parts.keys():</span><br><span class="line">                   continue</span><br><span class="line"></span><br><span class="line">               body_part = human.body_parts[i]</span><br><span class="line">               center = (int(body_part.x * image_w + 0.5), int(body_part.y * image_h + 0.5))</span><br><span class="line">               centers[i] = center</span><br><span class="line">               #自行添加   将每个关节的坐标点记录在flat中</span><br><span class="line">               flat[i*2] = center[0]</span><br><span class="line">               flat[i*2+1] = center[1]</span><br><span class="line">               cv2.circle(npimg, center, 3, common.CocoColors[i], thickness=3, lineType=8, shift=0)</span><br><span class="line"></span><br><span class="line">           # draw line</span><br><span class="line">           for pair_order, pair in enumerate(common.CocoPairsRender):</span><br><span class="line">               if pair[0] not in human.body_parts.keys() or pair[1] not in human.body_parts.keys():</span><br><span class="line">                   continue</span><br><span class="line"></span><br><span class="line">               # npimg = cv2.line(npimg, centers[pair[0]], centers[pair[1]], common.CocoColors[pair_order], 3)</span><br><span class="line">               cv2.line(npimg, centers[pair[0]], centers[pair[1]], common.CocoColors[pair_order], 3)</span><br><span class="line">       #print(flat)</span><br><span class="line">       return npimg, flat</span><br></pre></td></tr></table></figure>
+        
 
 
-
-
-      
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/tf-openpose-estimation%E5%BE%97%E5%88%B0%E5%85%B3%E8%8A%82%E7%82%B9%E7%9A%84%E5%9D%90%E6%A0%87/" rel="prev" title="tf-openpose-estimation得到关节点的坐标">
+      <i class="fa fa-chevron-left"></i> tf-openpose-estimation得到关节点的坐标
+    </a></div>
+      <div class="post-nav-item"></div>
     </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
       </footer>
+    
   </article>
   
   
-  
-
-
   
 
 
@@ -381,6 +345,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%B7%E6%B7%86%E7%9F%A9%E9%98%B5"><span class="nav-number">2.</span> <span class="nav-text">混淆矩阵</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E5%87%86%E7%8E%87%E4%B8%8E%E6%9F%A5%E5%85%A8%E7%8E%87"><span class="nav-number">3.</span> <span class="nav-text">查准率与查全率</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#P-R%E6%9B%B2%E7%BA%BF"><span class="nav-number">4.</span> <span class="nav-text">P-R曲线</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#F1"><span class="nav-number">5.</span> <span class="nav-text">F1</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
